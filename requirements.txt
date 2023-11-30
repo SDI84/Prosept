@@ -1,0 +1,6 @@
+pandas == 1.5.2
+re == 2.2.1
+nltk
+sentence-transformers
+datetime
+warnings
