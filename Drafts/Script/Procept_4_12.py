@@ -15,6 +15,11 @@ def clean_texts(name):
     Принимает на вход строку - название товара,
     возвращает его в отредактированном виде
     '''
+    # стоп-слова для английского и русского языков
+    stop_words_en = set(stopwords.words('english'))   # изменение тут
+    stop_words_ru = set(stopwords.words('russian'))
+    # объединим стоп-слова
+    stop_words = stop_words_en.union(stop_words_ru)
     
     if not pd.isna(name):
         # разделение слов
@@ -47,6 +52,7 @@ def prosept_predict(product: dict, dealer: dict, dealerprice: dict) -> list:
     # Преобразование словарей в DataFrame
     df_product = pd.DataFrame.from_dict(product)
     df_dealerprice = pd.DataFrame.from_dict(dealerprice)
+    df_dealer = pd.DataFrame.from_dict(dealer)  # изменение тут
     
     # Датафрейм df_res будет содержать рекомендации
     df_res = df_dealerprice[['id', 'product_key']]
@@ -57,19 +63,13 @@ def prosept_predict(product: dict, dealer: dict, dealerprice: dict) -> list:
 
     # В качестве исходного вектора продуктов используем все столбцы с наименованием продукции
     columns = ['name', 'ozon_name', 'name_1c', 'wb_name']
-        
-    # стоп-слова для английского и русского языков
-    stop_words_en = set(stopwords.words('english'))
-    stop_words_ru = set(stopwords.words('russian'))
-    # объединим стоп-слова
-    stop_words = stop_words_en.union(stop_words_ru)
 
     # Функция подготовки данных для модели LaBSE
     def t_fit_LaBSE(df,func=clean_texts,df_columns=['name']):
-        df_tmp = df[df_columns[0]].apply(clean_func)
+        df_tmp = df[df_columns[0]].apply(func) # изменение тут
         if len(df_columns) > 1:
             for i in range(1, len(df_columns)):
-                df_tmp = df_tmp + ' ' + df[df_columns[i]].apply(clean_func)
+                df_tmp = df_tmp + ' ' + df[df_columns[i]].apply(func) # изменение тут
         model = model_LaBSE.encode(df_tmp)
         return model, df[['id', 'name']]
 
@@ -102,7 +102,7 @@ def prosept_predict(product: dict, dealer: dict, dealerprice: dict) -> list:
     #df_res['predict'] = df_res['predict'].apply(tens)
     df_res.loc[:, 'quality'] = top_k_quality
     #df_res['quality'] = df_res['quality'].apply(tens)
-    df_res['queue'] = [[x for x in range(1, n + 1)] for j in range(len(df_res))]
+    df_res['queue'] = [[x for x in range(1, N_BEST + 1)] for j in range(len(df_res))] # изменение тут
     df_res = df_res.explode(['predict', 'queue', 'quality'])
     df_res = df_res.reset_index(drop=True)
     tmp_df = df_product['id'].loc[df_res['predict']].reset_index(drop=True)
