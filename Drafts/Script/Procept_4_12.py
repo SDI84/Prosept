@@ -50,6 +50,11 @@ def prosept_predict(product: dict, dealer: dict, dealerprice: dict) -> list:
     
     # Датафрейм df_res будет содержать рекомендации
     df_res = df_dealerprice[['id', 'product_key']]
+
+    # Датафрейм df_dealerprice_unique содержит только уникальные ключи названий продуктов у дилеров
+    df_dealerprice_unique = (df_dealerprice[['product_key','product_name']]
+                             .drop_duplicates(subset='product_key')
+                             .reset_index(drop=True))
     
     # стоп-слова для английского и русского языков
     stop_words_en = set(stopwords.words('english'))
@@ -81,21 +86,16 @@ def prosept_predict(product: dict, dealer: dict, dealerprice: dict) -> list:
         return util.pytorch_cos_sim(dealer_embedding_LaBSE, product_embedding_LaBSE) 
 
     # Получаем матрицу расстояний
-    df_predict_LaBSE = t_predict_LaBSE(df_dealerprice['product_name'])
+    df_predict_LaBSE = t_predict_LaBSE(df_dealerprice_unique['product_name'])
 
     # 10 индексов лучших совпадений для строк
     N_BEST = 10
-    # top_k_matches = []
-    # top_k_quality = []
-    # for i in range(df_predict_LaBSE.shape[0]):
-    #     quality, indices = df_predict_LaBSE[i].topk(N_BEST)
-    #     top_k_matches.append(indices.tolist())
-    #     top_k_quality.append(quality.tolist())
     quality,indices = df_predict_LaBSE.topk(N_BEST)
     
     # Сохраним предсказания в df_res
-    df_res.loc[:, 'predict'] = indices.tolist()
-    df_res.loc[:, 'quality'] = quality.tolist()
+    df_dealerprice_unique.loc[:,'predict'] = indices.tolist()
+    df_dealerprice_unique.loc[:, 'quality'] = quality.tolist()
+    df_res=df_res.merge(df_dealerprice_unique, how='left', on=['product_key'])
     df_res['queue'] = [[x for x in range(1, N_BEST+1)] for j in range(len(df_res))]
     df_res = df_res.explode(['predict', 'queue', 'quality'])
     df_res = df_res.reset_index(drop=True)
