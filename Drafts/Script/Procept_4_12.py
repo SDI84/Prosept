@@ -15,7 +15,13 @@ def clean_texts(name):
     Функции очистки текста.
     Принимает на вход строку - название товара,
     возвращает его в отредактированном виде
-    '''    
+    '''
+    # стоп-слова для английского и русского языков
+    stop_words_en = set(stopwords.words('english'))
+    stop_words_ru = set(stopwords.words('russian'))
+    # объединим стоп-слова
+    stop_words = stop_words_en.union(stop_words_ru)
+    
     if not pd.isna(name):
         # разделение слов
         name = ' '.join(re.split(r"([A-Za-z][A-Za-z]*)", name))
@@ -57,12 +63,6 @@ def prosept_predict(product: dict, dealer: dict, dealerprice: dict) -> dict:
                              .drop_duplicates(subset='product_key')
                              .reset_index(drop=True))
     
-    # стоп-слова для английского и русского языков
-    stop_words_en = set(stopwords.words('english'))
-    stop_words_ru = set(stopwords.words('russian'))
-    # объединим стоп-слова
-    stop_words = stop_words_en.union(stop_words_ru)
-    
     # Загружаем предобученную модель LaBSE, при первом запуске потребуется загрузить 1.8 Гб данных
     model_LaBSE = SentenceTransformer('LaBSE')
 
@@ -83,7 +83,7 @@ def prosept_predict(product: dict, dealer: dict, dealerprice: dict) -> dict:
 
     # Функция предсказания на основе модели LaBSE
     def t_predict_LaBSE(dealer_names):
-        dealer_embedding_LaBSE = model_LaBSE.encode(df_dealerprice['product_name'].apply(clean_texts))
+        dealer_embedding_LaBSE = model_LaBSE.encode(dealer_names.apply(clean_texts))
         return util.pytorch_cos_sim(dealer_embedding_LaBSE, product_embedding_LaBSE) 
 
     # Получаем матрицу расстояний
