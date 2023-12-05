@@ -40,7 +40,7 @@ def clean_texts(name):
     
     return name 
 
-def prosept_predict(product: dict, dealer: dict, dealerprice: dict) -> dict:
+def prosept_predict(product: list, dealerprice: list) -> list:
     
     """
     Функция для предсказания n ближайших названий производителя 
@@ -53,7 +53,6 @@ def prosept_predict(product: dict, dealer: dict, dealerprice: dict) -> dict:
     # Преобразование словарей в DataFrame
     df_product = pd.DataFrame.from_dict(product)
     df_dealerprice = pd.DataFrame.from_dict(dealerprice)
-    df_dealer = pd.DataFrame.from_dict(dealer)
     
     # Датафрейм df_res будет содержать рекомендации
     df_res = df_dealerprice[['id', 'product_key']]
@@ -108,4 +107,4 @@ def prosept_predict(product: dict, dealer: dict, dealerprice: dict) -> dict:
     # результат в JSON
     result_json = df_res.to_json(orient='records')
 
-    return json.loads(result_json)
+    return json.loads(result_json)   # список словарей
