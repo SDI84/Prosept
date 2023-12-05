@@ -33,7 +33,7 @@ def clean_texts(name):
     
     return name 
 
-def prosept_predict(product: dict, dealer: dict, dealerprice: dict) -> list:
+def prosept_predict(product: dict, dealer: dict, dealerprice: dict) -> dict:
     
     """
     Функция для предсказания n ближайших названий производителя 
@@ -104,5 +104,7 @@ def prosept_predict(product: dict, dealer: dict, dealerprice: dict) -> list:
     df_res = df_res.drop('predict', axis=1)
     df_res['create_date'] = datetime.now()
 
-    return df_res.to_json() 
-    #return df_res.to_dict()
+    # результат в JSON
+    result_json = df_result.to_json(orient='records')
+
+    return json.loads(result_json)
