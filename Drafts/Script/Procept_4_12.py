@@ -105,6 +105,6 @@ def prosept_predict(product: dict, dealer: dict, dealerprice: dict) -> dict:
     df_res['create_date'] = datetime.now()
 
     # результат в JSON
-    result_json = df_result.to_json(orient='records')
+    result_json = df_res.to_json(orient='records')
 
     return json.loads(result_json)
