@@ -1,6 +1,7 @@
 # Импорт библиотек
 import pandas as pd
 import re
+import json
 
 from nltk.corpus import stopwords
 from sentence_transformers import SentenceTransformer, util
