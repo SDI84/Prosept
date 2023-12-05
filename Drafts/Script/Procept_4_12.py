@@ -46,7 +46,6 @@ def prosept_predict(product: dict, dealer: dict, dealerprice: dict) -> dict:
     Функция для предсказания n ближайших названий производителя 
     для каждого товара дилера.
     product - список товаров, которые производит и распространяет заказчик; 
-    dealer - список дилеров;
     dealerprice - результат работы парсера площадок дилеров;
     """
     
@@ -86,12 +85,6 @@ def prosept_predict(product: dict, dealer: dict, dealerprice: dict) -> dict:
 
     # 10 индексов лучших совпадений для строк
     N_BEST = 10
-    # top_k_matches = []
-    # top_k_quality = []
-    # for i in range(df_predict_LaBSE.shape[0]):
-    #     quality, indices = df_predict_LaBSE[i].topk(N_BEST)
-    #     top_k_matches.append(indices.tolist())
-    #     top_k_quality.append(quality.tolist())
     quality,indices = df_predict_LaBSE.topk(N_BEST)
     
     # Сохраним предсказания в df_res
