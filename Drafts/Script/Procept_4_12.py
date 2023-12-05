@@ -14,13 +14,7 @@ def clean_texts(name):
     Функции очистки текста.
     Принимает на вход строку - название товара,
     возвращает его в отредактированном виде
-    '''
-    # стоп-слова для английского и русского языков
-    stop_words_en = set(stopwords.words('english'))   # изменение тут
-    stop_words_ru = set(stopwords.words('russian'))
-    # объединим стоп-слова
-    stop_words = stop_words_en.union(stop_words_ru)
-    
+    '''    
     if not pd.isna(name):
         # разделение слов
         name = ' '.join(re.split(r"([A-Za-z][A-Za-z]*)", name))
@@ -52,11 +46,16 @@ def prosept_predict(product: dict, dealer: dict, dealerprice: dict) -> list:
     # Преобразование словарей в DataFrame
     df_product = pd.DataFrame.from_dict(product)
     df_dealerprice = pd.DataFrame.from_dict(dealerprice)
-    df_dealer = pd.DataFrame.from_dict(dealer)  # изменение тут
+    df_dealer = pd.DataFrame.from_dict(dealer)
     
     # Датафрейм df_res будет содержать рекомендации
     df_res = df_dealerprice[['id', 'product_key']]
-    df_res.columns = ['id', 'key']
+    
+    # стоп-слова для английского и русского языков
+    stop_words_en = set(stopwords.words('english'))
+    stop_words_ru = set(stopwords.words('russian'))
+    # объединим стоп-слова
+    stop_words = stop_words_en.union(stop_words_ru)
     
     # Загружаем предобученную модель LaBSE, при первом запуске потребуется загрузить 1.8 Гб данных
     model_LaBSE = SentenceTransformer('LaBSE')
@@ -66,10 +65,10 @@ def prosept_predict(product: dict, dealer: dict, dealerprice: dict) -> list:
 
     # Функция подготовки данных для модели LaBSE
     def t_fit_LaBSE(df,func=clean_texts,df_columns=['name']):
-        df_tmp = df[df_columns[0]].apply(func) # изменение тут
+        df_tmp = df[df_columns[0]].apply(func)
         if len(df_columns) > 1:
             for i in range(1, len(df_columns)):
-                df_tmp = df_tmp + ' ' + df[df_columns[i]].apply(func) # изменение тут
+                df_tmp = df_tmp + ' ' + df[df_columns[i]].apply(func)
         model = model_LaBSE.encode(df_tmp)
         return model, df[['id', 'name']]
 
@@ -86,23 +85,18 @@ def prosept_predict(product: dict, dealer: dict, dealerprice: dict) -> list:
 
     # 10 индексов лучших совпадений для строк
     N_BEST = 10
-    top_k_matches = []
-    top_k_quality = []
-    for i in range(df_predict_LaBSE.shape[0]):
-        quality, indices = df_predict_LaBSE[i].topk(N_BEST)
-        top_k_matches.append(indices.tolist())
-        top_k_quality.append(quality.tolist())
+    # top_k_matches = []
+    # top_k_quality = []
+    # for i in range(df_predict_LaBSE.shape[0]):
+    #     quality, indices = df_predict_LaBSE[i].topk(N_BEST)
+    #     top_k_matches.append(indices.tolist())
+    #     top_k_quality.append(quality.tolist())
+    quality,indices = df_predict_LaBSE.topk(N_BEST)
     
     # Сохраним предсказания в df_res
-    
-    #def tens(res):    
-        #return [res[s].item() for s in range(10)]
-
-    df_res.loc[:, 'predict'] = top_k_matches
-    #df_res['predict'] = df_res['predict'].apply(tens)
-    df_res.loc[:, 'quality'] = top_k_quality
-    #df_res['quality'] = df_res['quality'].apply(tens)
-    df_res['queue'] = [[x for x in range(1, N_BEST + 1)] for j in range(len(df_res))] # изменение тут
+    df_res.loc[:, 'predict'] = indices.tolist()
+    df_res.loc[:, 'quality'] = quality.tolist()
+    df_res['queue'] = [[x for x in range(1, N_BEST+1)] for j in range(len(df_res))]
     df_res = df_res.explode(['predict', 'queue', 'quality'])
     df_res = df_res.reset_index(drop=True)
     tmp_df = df_product['id'].loc[df_res['predict']].reset_index(drop=True)
@@ -110,5 +104,5 @@ def prosept_predict(product: dict, dealer: dict, dealerprice: dict) -> list:
     df_res = df_res.drop('predict', axis=1)
     df_res['create_date'] = datetime.now()
 
-    #return df_res.to_json() 
-    return df_res.to_dict()
+    return df_res.to_json() 
+    #return df_res.to_dict()
