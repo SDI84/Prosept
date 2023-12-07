@@ -1,6 +1,4 @@
-pandas == 1.5.2
-re == 2.2.1
-nltk
-sentence-transformers
-datetime
-warnings
+json==2.0.9
+numpy==1.23.5
+pandas==1.5.3
+re==2.2.1
