@@ -68,6 +68,6 @@ $ pip install -r requirements.txt
  Для презентаци выбрана модель TF-IDF из-за скорости работы.
 
 ## Команда проекта
-**- Грибанов Михаил - Leader** [Telegram](https://t.me/gribanov_m) 
+**- Грибанов Михаил - Leader** [Telegram](https://t.me/gribanov_m) [GitHub](https://github.com/MGribanov)
 **- Сергеев Дмитрий**   [Telegram](https://t.me/SDI84) 
-**- Шубина Любовь** [Telegram](https://t.me/luybashu) 
+**- Шубина Любовь** [Telegram](https://t.me/luybashu) [GitHub](https://github.com/luybashu)
